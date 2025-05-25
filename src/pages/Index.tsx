@@ -5,7 +5,7 @@ import TokenBalance from '@/components/TokenBalance';
 import NFTMintForm from '@/components/NFTMintForm';
 import NFTGallery from '@/components/NFTGallery';
 import RewardHistory from '@/components/RewardHistory';
-import { useWeb3 } from '@/hooks/useWeb3';
+import { useWeb3 } from '../hooks/useWeb3';
 import { useToast } from '@/hooks/use-toast';
 import { Palette, Coins, Trophy, Hash, Star, Wallet, Sparkles, Zap, Users } from 'lucide-react';
 
@@ -28,143 +28,47 @@ interface RewardEvent {
 }
 
 const Index = () => {
-  const { account, isConnected, setAccount, setIsConnected } = useWeb3();
-  const [tokenBalance, setTokenBalance] = useState('0');
-  const [totalRewards, setTotalRewards] = useState('0');
-  const [nfts, setNfts] = useState<NFT[]>([]);
-  const [rewards, setRewards] = useState<RewardEvent[]>([]);
+  const { 
+    account, 
+    isConnected, 
+    tokenBalance, 
+    totalRewards, 
+    nfts, 
+    rewards, 
+    isLoading,
+    connectWallet,
+    mintNFT
+  } = useWeb3();
   const { toast } = useToast();
 
-  const handleWalletConnected = (address: string) => {
-    setAccount(address);
-    setIsConnected(true);
-    loadUserData(address);
+  const handleWalletConnected = async (address: string) => {
+    try {
+      await connectWallet();
+    } catch (error) {
+      console.error('Error connecting wallet:', error);
+      toast({
+        title: "Connection Error",
+        description: "Failed to connect wallet. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const loadUserData = async (address: string) => {
-    console.log('Loading data for address:', address);
-    
-    setTokenBalance('150');
-    setTotalRewards('75');
-    
-    const mockNFTs: NFT[] = [
-      {
-        tokenId: '1',
-        name: 'Neon Cyberpunk Cityscape',
-        description: 'A futuristic cityscape with vibrant neon lights and towering skyscrapers',
-        image: 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?w=800&h=800&fit=crop&crop=entropy&auto=format&q=80',
-        creator: address,
-        mintedAt: new Date(Date.now() - 86400000)
-      },
-      {
-        tokenId: '2',
-        name: 'Digital Ocean Dreams',
-        description: 'Abstract digital waves flowing like an ocean in cyberspace',
-        image: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?w=800&h=800&fit=crop&crop=entropy&auto=format&q=80',
-        creator: '0x742d35Cc6634C0532925a3b8D47f19dE3C4FcA88',
-        mintedAt: new Date(Date.now() - 172800000)
-      },
-      {
-        tokenId: '3',
-        name: 'Cosmic Neural Network',
-        description: 'AI-generated visualization of a cosmic neural network with glowing connections',
-        image: 'https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=800&h=800&fit=crop&crop=entropy&auto=format&q=80',
-        creator: address,
-        mintedAt: new Date(Date.now() - 259200000)
-      },
-      {
-        tokenId: '4',
-        name: 'Ethereal Light Patterns',
-        description: 'Beautiful light patterns creating ethereal geometric shapes',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800&h=800&fit=crop&crop=entropy&auto=format&q=80',
-        creator: '0x742d35Cc6634C0532925a3b8D47f19dE3C4FcA88',
-        mintedAt: new Date(Date.now() - 345600000)
-      },
-      {
-        tokenId: '5',
-        name: 'Quantum Data Visualization',
-        description: 'A stunning visualization of quantum data flowing through digital space',
-        image: 'https://images.unsplash.com/photo-1617791160505-6f00504e3519?w=800&h=800&fit=crop&crop=entropy&auto=format&q=80',
-        creator: address,
-        mintedAt: new Date(Date.now() - 432000000)
-      },
-      {
-        tokenId: '6',
-        name: 'Abstract Digital Landscape',
-        description: 'Surreal digital landscape with flowing forms and vibrant colors',
-        image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=800&fit=crop&crop=entropy&auto=format&q=80',
-        creator: '0x742d35Cc6634C0532925a3b8D47f19dE3C4FcA88',
-        mintedAt: new Date(Date.now() - 518400000)
-      }
-    ];
-    setNfts(mockNFTs);
-
-    const mockRewards: RewardEvent[] = [
-      {
-        id: '1',
-        creator: address,
-        amount: '10',
-        nftTokenId: '1',
-        timestamp: new Date(Date.now() - 86400000),
-        transactionHash: '0x1234567890abcdef'
-      },
-      {
-        id: '2',
-        creator: '0x742d35Cc6634C0532925a3b8D47f19dE3C4FcA88',
-        amount: '10',
-        nftTokenId: '2',
-        timestamp: new Date(Date.now() - 172800000),
-        transactionHash: '0xabcdef1234567890'
-      },
-      {
-        id: '3',
-        creator: address,
-        amount: '10',
-        nftTokenId: '3',
-        timestamp: new Date(Date.now() - 259200000),
-        transactionHash: '0xfedcba0987654321'
-      },
-      {
-        id: '4',
-        creator: '0x742d35Cc6634C0532925a3b8D47f19dE3C4FcA88',
-        amount: '10',
-        nftTokenId: '4',
-        timestamp: new Date(Date.now() - 345600000),
-        transactionHash: '0x1357924680abcdef'
-      }
-    ];
-    setRewards(mockRewards);
-  };
+  // This function has been replaced by the useWeb3 hook's loadUserData function
 
   const handleMintNFT = async (metadata: { name: string; description: string; image: string }) => {
-    console.log('Minting NFT with metadata:', metadata);
-    
-    await new Promise(resolve => setTimeout(resolve, 3000));
-    
-    const newNFT: NFT = {
-      tokenId: (nfts.length + 1).toString(),
-      name: metadata.name,
-      description: metadata.description,
-      image: metadata.image,
-      creator: account!,
-      mintedAt: new Date()
-    };
-    
-    setNfts(prev => [newNFT, ...prev]);
-    
-    const newReward: RewardEvent = {
-      id: (rewards.length + 1).toString(),
-      creator: account!,
-      amount: '10',
-      nftTokenId: newNFT.tokenId,
-      timestamp: new Date(),
-      transactionHash: `0x${Math.random().toString(16).substr(2, 16)}`
-    };
-    
-    setRewards(prev => [newReward, ...prev]);
-    
-    setTokenBalance(prev => (parseInt(prev) + 10).toString());
-    setTotalRewards(prev => (parseInt(prev) + 10).toString());
+    try {
+      // Use the mintNFT function from the useWeb3 hook to mint the NFT on the blockchain
+      const txHash = await mintNFT(metadata);
+      return txHash;
+    } catch (error) {
+      console.error('Error minting NFT:', error);
+      toast({
+        title: "Minting Failed",
+        description: "Failed to mint NFT. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (
@@ -238,9 +142,16 @@ const Index = () => {
             </div>
 
             <div className="space-y-8">
-              <Tabs defaultValue="mint" className="space-y-8">
+              <Tabs defaultValue="home" className="space-y-8">
                 <div className="flex justify-center">
                   <TabsList className="grid w-full max-w-2xl grid-cols-4 bg-slate-800/50 backdrop-blur-xl border border-slate-700/50 rounded-2xl p-2 shadow-2xl">
+                    <TabsTrigger 
+                      value="home" 
+                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-cyan-500 text-white rounded-xl transition-all duration-300 data-[state=active]:shadow-lg data-[state=active]:scale-105"
+                    >
+                      <Star className="h-4 w-4 mr-2" />
+                      <span className="hidden sm:inline">Home</span>
+                    </TabsTrigger>
                     <TabsTrigger 
                       value="mint" 
                       className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-purple-500 text-white rounded-xl transition-all duration-300 data-[state=active]:shadow-lg data-[state=active]:scale-105"
@@ -262,13 +173,6 @@ const Index = () => {
                       <Trophy className="h-4 w-4 mr-2" />
                       <span className="hidden sm:inline">Rewards</span>
                     </TabsTrigger>
-                    <TabsTrigger 
-                      value="about" 
-                      className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-cyan-600 data-[state=active]:to-cyan-500 text-white rounded-xl transition-all duration-300 data-[state=active]:shadow-lg data-[state=active]:scale-105"
-                    >
-                      <Star className="h-4 w-4 mr-2" />
-                      <span className="hidden sm:inline">About</span>
-                    </TabsTrigger>
                   </TabsList>
                 </div>
 
@@ -284,7 +188,7 @@ const Index = () => {
                   <RewardHistory rewards={rewards} />
                 </TabsContent>
 
-                <TabsContent value="about" className="animate-fade-in">
+                <TabsContent value="home" className="animate-fade-in">
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                     <div className="relative group">
                       <div className="absolute inset-0 bg-gradient-to-r from-purple-600 via-pink-600 to-cyan-600 rounded-2xl blur-lg opacity-20 group-hover:opacity-30 transition-opacity duration-300"></div>

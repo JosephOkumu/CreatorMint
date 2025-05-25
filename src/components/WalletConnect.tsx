@@ -32,6 +32,7 @@ const WalletConnect: React.FC<WalletConnectProps> = ({ onWalletConnected, connec
       });
       
       if (accounts.length > 0) {
+        // Call the parent's onWalletConnected function with the connected address
         onWalletConnected(accounts[0]);
         toast({
           title: "Wallet Connected",

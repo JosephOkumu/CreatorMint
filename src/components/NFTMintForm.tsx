@@ -7,9 +7,10 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Upload, Image as ImageIcon, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { ipfsService } from '../services/ipfs';
 
 interface NFTMintFormProps {
-  onMint: (metadata: { name: string; description: string; image: string }) => Promise<void>;
+  onMint: (metadata: { name: string; description: string; image: string }) => Promise<string | void>;
   isConnected: boolean;
 }
 
@@ -33,13 +34,23 @@ const NFTMintForm: React.FC<NFTMintFormProps> = ({ onMint, isConnected }) => {
     }
   };
 
-  const uploadToIPFS = async (file: File): Promise<string> => {
-    // Simulate IPFS upload - in a real app, you'd use Pinata or NFT.Storage
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        resolve(`ipfs://QmSimulatedHash${Date.now()}`);
-      }, 2000);
-    });
+  const uploadToIPFS = async (file: File, name: string, description: string): Promise<string> => {
+    try {
+      // Prepare the file for NFT.Storage
+      const nftFile = ipfsService.prepareFile(file);
+      
+      // Upload to IPFS and get metadata URI
+      const metadataUri = await ipfsService.uploadNFT({
+        name,
+        description,
+        image: nftFile
+      });
+      
+      return metadataUri;
+    } catch (error) {
+      console.error('Error uploading to IPFS:', error);
+      throw error;
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -65,17 +76,18 @@ const NFTMintForm: React.FC<NFTMintFormProps> = ({ onMint, isConnected }) => {
 
     setIsMinting(true);
     try {
-      // Upload image to IPFS
-      const imageUri = await uploadToIPFS(image);
+      // Upload to IPFS and get metadata URI
+      const metadataUri = await uploadToIPFS(image, name, description);
       
-      // Create metadata
+      // Create metadata object for the contract
       const metadata = {
         name,
         description,
-        image: imageUri
+        image: metadataUri
       };
 
-      await onMint(metadata);
+      // Call the parent's onMint function (which will call the contract)
+      const result = await onMint(metadata);
       
       // Reset form
       setName('');
@@ -83,9 +95,17 @@ const NFTMintForm: React.FC<NFTMintFormProps> = ({ onMint, isConnected }) => {
       setImage(null);
       setImagePreview(null);
       
+      // Prepare success message
+      let successMessage = "Your NFT has been successfully minted and you've earned Creator Tokens!";
+      
+      // Add transaction hash if available
+      if (typeof result === 'string') {
+        successMessage += ` Transaction: ${result.slice(0, 10)}...`;
+      }
+      
       toast({
         title: "NFT Minted!",
-        description: "Your NFT has been successfully minted and you've earned Creator Tokens!"
+        description: successMessage
       });
     } catch (error) {
       console.error('Minting error:', error);
