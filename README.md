@@ -1,4 +1,4 @@
-# CreatorVerse
+# CreatorsVerse
 
 A dApp platform where users can mint and collect NFTs representing digital artworks, with creators earning ERC20 tokens as rewards every time someone mints their NFT. Built on Lisk Sepolia with React, TypeScript, and Ethers.js.
 
