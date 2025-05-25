@@ -1,0 +1,26 @@
+# Dependency directories
+node_modules/
+
+# Bun artifacts
+bun.lockb
+
+# Build output
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+
+# IDE specific
+.vscode/
+.idea/
+
+# OS metadata
+.DS_Store
+
+# Debug logs
+npm-debug.log*
+
+# Local development
+*.local
